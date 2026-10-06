@@ -8,7 +8,7 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	srv := httptest.NewServer(NewMux("identity-service"))
+	srv := httptest.NewServer(NewMux(Deps{Service: "identity-service"}))
 	defer srv.Close()
 
 	res, err := http.Get(srv.URL + "/health")
@@ -32,7 +32,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestNotFoundEnvelope(t *testing.T) {
-	srv := httptest.NewServer(NewMux("identity-service"))
+	srv := httptest.NewServer(NewMux(Deps{Service: "identity-service"}))
 	defer srv.Close()
 
 	req, _ := http.NewRequest(http.MethodGet, srv.URL+"/nope", nil)
