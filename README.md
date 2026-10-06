@@ -6,7 +6,7 @@ Contract: `drp-docs` `07-api/contracts/openapi/identity-service.yaml`. RS256 is 
 
 ## Corte 2
 
-This increment is a walking skeleton: `GET /health` and `{error, message, traceId}` on unknown routes. Login / JWKS / bcrypt persist in a later `feat/` on this repo. `drp-front` does not need this process (synthetic contract data).
+This increment is a walking skeleton: `GET /health`, `{error, message, traceId}` on unknown routes, and the **User aggregate** (`internal/domain`: email, roles `USER|ADMIN`, soft-delete). Login / JWKS / bcrypt persist in a later `feat/` on this repo. `drp-front` does not need this process (synthetic contract data).
 
 ## Layout
 
