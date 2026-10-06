@@ -1,6 +1,6 @@
 package app
 
-// Health is the liveness result. No database: login persistence lands in a later PR.
+// Health is the liveness result. Login uses an in-memory seed until Flyway persistence lands.
 type Health struct {
 	Status  string
 	Service string
