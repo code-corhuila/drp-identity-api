@@ -1,0 +1,22 @@
+# API process only (Anexo J). No Postgres container. Engine: drp-infra-postgres.
+
+name: ${COMPOSE_PROJECT_NAME:-drp-dev}
+
+services:
+  identity-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: drp-identity-api
+    environment:
+      HTTP_ADDR: ${HTTP_ADDR:-:8081}
+      SERVICE_NAME: ${SERVICE_NAME:-identity-service}
+    ports:
+      - "${HTTP_PORT:-8081}:8081"
+    networks:
+      - pg
+
+networks:
+  pg:
+    name: ${IDENTITY_API_NETWORK:-drp-dev_default}
+    external: true
