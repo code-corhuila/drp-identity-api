@@ -70,7 +70,14 @@ func TestLoginRejects(t *testing.T) {
 	if _, err := a.Login(context.Background(), LoginCommand{Email: "x", Password: "short"}); err != ErrValidation {
 		t.Fatalf("short password: %v", err)
 	}
+	if _, err := a.Login(context.Background(), LoginCommand{Email: "member@spacehub.local", Password: ""}); err != ErrInvalidCredentials {
+		t.Fatalf("empty password: %v", err)
+	}
 	if _, err := a.Login(context.Background(), LoginCommand{Email: "member@spacehub.local", Password: "Spacehub1!"}); err != ErrInvalidCredentials {
 		t.Fatalf("bad password: %v", err)
+	}
+	unknown := Auth{Users: stubUsers{u}, Passwords: stubPwd{true}, Tokens: stubTok{}}
+	if _, err := unknown.Login(context.Background(), LoginCommand{Email: "nobody@spacehub.local", Password: "Spacehub1!"}); err != ErrInvalidCredentials {
+		t.Fatalf("unknown user: %v", err)
 	}
 }
