@@ -12,8 +12,8 @@ import (
 )
 
 type loginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    *string `json:"email"`
+	Password *string `json:"password"`
 }
 
 type userDTO struct {
@@ -24,10 +24,9 @@ type userDTO struct {
 }
 
 type loginResponse struct {
-	AccessToken string  `json:"accessToken"`
-	TokenType   string  `json:"tokenType"`
-	ExpiresIn   int     `json:"expiresIn"`
-	User        userDTO `json:"user"`
+	AccessToken string `json:"accessToken"`
+	TokenType   string `json:"tokenType"`
+	ExpiresIn   int    `json:"expiresIn"`
 }
 
 func toUserDTO(u domain.User) userDTO {
@@ -42,13 +41,17 @@ func LoginHandler(auth app.Auth) http.HandlerFunc {
 			writeErr(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "Datos de entrada inválidos", nil)
 			return
 		}
-		got, err := auth.Login(r.Context(), app.LoginCommand{Email: req.Email, Password: req.Password})
+		if req.Email == nil || req.Password == nil {
+			writeErr(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "Datos de entrada inválidos", []map[string]string{{"field": "email", "message": "Email y contraseña son requeridos"}})
+			return
+		}
+		got, err := auth.Login(r.Context(), app.LoginCommand{Email: *req.Email, Password: *req.Password})
 		if errors.Is(err, app.ErrValidation) {
 			writeErr(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "Datos de entrada inválidos", []map[string]string{{"field": "email", "message": "Email y contraseña (mín. 8) son requeridos"}})
 			return
 		}
 		if errors.Is(err, app.ErrInvalidCredentials) {
-			writeErr(w, r, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Email o contraseña inválidos", nil)
+			writeErr(w, r, http.StatusUnprocessableEntity, "BUSINESS_RULE_VIOLATION", "Usuario o contraseña incorrectos.", nil)
 			return
 		}
 		if err != nil {
@@ -59,7 +62,6 @@ func LoginHandler(auth app.Auth) http.HandlerFunc {
 			AccessToken: got.AccessToken,
 			TokenType:   got.TokenType,
 			ExpiresIn:   got.ExpiresIn,
-			User:        toUserDTO(got.User),
 		})
 	}
 }
