@@ -95,6 +95,17 @@ func (u User) HasRole(r Role) bool {
 	return false
 }
 
+// PublicRole is the singular role the OpenAPI User DTO exposes.
+func (u User) PublicRole() Role {
+	if u.HasRole(RoleAdmin) {
+		return RoleAdmin
+	}
+	if len(u.Roles) == 0 {
+		return RoleUser
+	}
+	return u.Roles[0]
+}
+
 func (u User) SoftDelete(now time.Time) (User, error) {
 	if u.DeletedAt != nil {
 		return User{}, ErrInvalidTransition
