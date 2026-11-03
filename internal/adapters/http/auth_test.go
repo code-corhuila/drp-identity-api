@@ -120,6 +120,14 @@ func TestLoginEmptyVsMissingPassword(t *testing.T) {
 	if missing.status != http.StatusBadRequest {
 		t.Fatalf("missing password %d %+v", missing.status, missing.body)
 	}
+	details, _ := missing.body["details"].([]any)
+	if len(details) == 0 {
+		t.Fatalf("missing password details %+v", missing.body)
+	}
+	row, _ := details[0].(map[string]any)
+	if row["field"] != "password" {
+		t.Fatalf("details field %+v", details)
+	}
 	nullPwd := postLogin(t, srv.URL, `{"email":"member@spacehub.local","password":null}`)
 	if nullPwd.status != http.StatusBadRequest {
 		t.Fatalf("null password %d %+v", nullPwd.status, nullPwd.body)
