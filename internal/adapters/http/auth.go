@@ -42,7 +42,14 @@ func LoginHandler(auth app.Auth) http.HandlerFunc {
 			return
 		}
 		if req.Email == nil || req.Password == nil {
-			writeErr(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "Datos de entrada inválidos", []map[string]string{{"field": "email", "message": "Email y contraseña son requeridos"}})
+			details := make([]map[string]string, 0, 2)
+			if req.Email == nil {
+				details = append(details, map[string]string{"field": "email", "message": "requerido"})
+			}
+			if req.Password == nil {
+				details = append(details, map[string]string{"field": "password", "message": "requerido"})
+			}
+			writeErr(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "Datos de entrada inválidos", details)
 			return
 		}
 		got, err := auth.Login(r.Context(), app.LoginCommand{Email: *req.Email, Password: *req.Password})
