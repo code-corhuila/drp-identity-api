@@ -1,11 +1,39 @@
 package httpadapter
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+func TestHealthDownWhenReadyFails(t *testing.T) {
+	srv := httptest.NewServer(NewMux(Deps{
+		Service: "identity-service",
+		Ready: func(context.Context) error {
+			return errors.New("postgres down")
+		},
+	}))
+	defer srv.Close()
+
+	res, err := http.Get(srv.URL + "/health")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("status %d", res.StatusCode)
+	}
+	var body healthBody
+	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Status != "down" {
+		t.Fatalf("body %+v", body)
+	}
+}
 
 func TestHealth(t *testing.T) {
 	srv := httptest.NewServer(NewMux(Deps{Service: "identity-service"}))

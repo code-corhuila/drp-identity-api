@@ -27,11 +27,15 @@ func (u *Users) FindByID(ctx context.Context, id string) (domain.User, error) {
 	return u.load(ctx, `u.id = $1`, id)
 }
 
+func (u *Users) Ping(ctx context.Context) error {
+	return u.DB.PingContext(ctx)
+}
+
 func (u *Users) load(ctx context.Context, where string, arg any) (domain.User, error) {
 	rows, err := u.DB.QueryContext(ctx, `
 SELECT u.id, u.email, u.password_hash, u.display_name, u.created_at, u.updated_at, u.deleted_at, r.role
-FROM users u
-LEFT JOIN user_roles r ON r.user_id = u.id
+FROM identity.users u
+LEFT JOIN identity.user_roles r ON r.user_id = u.id
 WHERE `+where+` AND u.deleted_at IS NULL
 ORDER BY r.role`, arg)
 	if err != nil {
@@ -87,7 +91,7 @@ func (u *Users) EnsureSeedPassword(ctx context.Context, plain string) error {
 		return err
 	}
 	_, err = u.DB.ExecContext(ctx, `
-UPDATE users SET password_hash = $1, updated_at = NOW()
+UPDATE identity.users SET password_hash = $1, updated_at = NOW()
 WHERE password_hash LIKE 'PENDING%'`, string(hash))
 	return err
 }

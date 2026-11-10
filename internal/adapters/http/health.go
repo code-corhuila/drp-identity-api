@@ -1,6 +1,7 @@
 package httpadapter
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -14,10 +15,17 @@ type healthBody struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func HealthHandler(service string) http.HandlerFunc {
+func HealthHandler(service string, ready func(context.Context) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		h := app.CheckHealth(service, time.Now().UTC())
-		writeJSON(w, http.StatusOK, healthBody{
+		status := http.StatusOK
+		if ready != nil {
+			if err := ready(r.Context()); err != nil {
+				h.Status = "down"
+				status = http.StatusServiceUnavailable
+			}
+		}
+		writeJSON(w, status, healthBody{
 			Status:    h.Status,
 			Service:   h.Service,
 			Timestamp: h.Timestamp.UTC().Format("2006-01-02T15:04:05Z"),

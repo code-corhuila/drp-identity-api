@@ -25,6 +25,7 @@ func main() {
 	}
 
 	var users app.UserRepository
+	var ready func(context.Context) error
 	store := "memory Corte 2 seed"
 	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
 		db, err := postgres.Open(dsn)
@@ -40,6 +41,7 @@ func main() {
 		}
 		users = pg
 		store = "postgres identity schema"
+		ready = pg.Ping
 	} else {
 		seed, err := memory.Corte2(os.Getenv("IDENTITY_SEED_PASSWORD"))
 		if err != nil {
@@ -59,6 +61,7 @@ func main() {
 			Passwords: security.Passwords{},
 			Tokens:    tokens,
 		},
+		Ready: ready,
 	})
 
 	log.Printf("drp-identity-api listening on %s (%s; JWKS issued here)", addr, store)

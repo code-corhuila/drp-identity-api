@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Users is an in-memory port. Flyway persistence is a later feat.
+// Users is an in-memory port used when DATABASE_URL is empty.
 // Corte 2 UI does not read this: drp-front stays on synthetic/failover.
 type Users struct {
 	mu   sync.RWMutex

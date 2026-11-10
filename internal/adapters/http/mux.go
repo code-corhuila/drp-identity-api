@@ -1,6 +1,7 @@
 package httpadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/code-corhuila/drp-identity-api/internal/app"
@@ -9,11 +10,13 @@ import (
 type Deps struct {
 	Service string
 	Auth    app.Auth
+	// Ready: when set (postgres ping), a failed check is 503.
+	Ready func(context.Context) error
 }
 
 func NewMux(d Deps) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("GET /health", HealthHandler(d.Service))
+	mux.Handle("GET /health", HealthHandler(d.Service, d.Ready))
 	if d.Auth.Tokens != nil {
 		mux.Handle("GET /api/v1/auth/jwks", JWKSHandler(d.Auth.Tokens))
 	}
