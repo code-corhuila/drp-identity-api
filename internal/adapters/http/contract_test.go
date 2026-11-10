@@ -12,7 +12,7 @@ func TestLoginIgnoresUserField(t *testing.T) {
 	srv := httptest.NewServer(authMux(t))
 	defer srv.Close()
 
-	payload := []byte(`{"email":"member@spacehub.local","password":"Spacehub1!","user":{"id":"spoof"}}`)
+	payload := []byte(`{"email":"member@spacehub.local","password":"` + testSeedPassword + `","user":{"id":"spoof"}}`)
 	res, err := http.Post(srv.URL+"/api/v1/auth/login", "application/json", bytes.NewReader(payload))
 	if err != nil {
 		t.Fatal(err)

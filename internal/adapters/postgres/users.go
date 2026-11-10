@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/code-corhuila/drp-identity-api/internal/app"
@@ -84,7 +85,7 @@ ORDER BY r.role`, arg)
 // EnsureSeedPassword replaces Flyway placeholder hashes so login works (DML only).
 func (u *Users) EnsureSeedPassword(ctx context.Context, plain string) error {
 	if strings.TrimSpace(plain) == "" {
-		plain = "Spacehub1!"
+		return fmt.Errorf("IDENTITY_SEED_PASSWORD is required")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(plain), bcrypt.DefaultCost)
 	if err != nil {

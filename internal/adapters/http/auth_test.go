@@ -12,9 +12,11 @@ import (
 	"github.com/code-corhuila/drp-identity-api/internal/app"
 )
 
+const testSeedPassword = "test-seed-only"
+
 func authMux(t *testing.T) http.Handler {
 	t.Helper()
-	users, err := memory.Corte2("Spacehub1!")
+	users, err := memory.Corte2(testSeedPassword)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +34,7 @@ func TestLoginAndMe(t *testing.T) {
 	srv := httptest.NewServer(authMux(t))
 	defer srv.Close()
 
-	body, _ := json.Marshal(map[string]string{"email": "member@spacehub.local", "password": "Spacehub1!"})
+	body, _ := json.Marshal(map[string]string{"email": "member@spacehub.local", "password": testSeedPassword})
 	res, err := http.Post(srv.URL+"/api/v1/auth/login", "application/json", bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
@@ -74,12 +76,56 @@ func TestLoginAndMe(t *testing.T) {
 	}
 }
 
+func TestMeIsAlwaysTheBearerSubject(t *testing.T) {
+	srv := httptest.NewServer(authMux(t))
+	defer srv.Close()
+
+	memberLogin := postLogin(t, srv.URL, `{"email":"member@spacehub.local","password":"`+testSeedPassword+`"}`)
+	adminLogin := postLogin(t, srv.URL, `{"email":"admin@spacehub.local","password":"`+testSeedPassword+`"}`)
+	if memberLogin.status != http.StatusOK || adminLogin.status != http.StatusOK {
+		t.Fatalf("login member=%d admin=%d", memberLogin.status, adminLogin.status)
+	}
+	memberTok, _ := memberLogin.body["accessToken"].(string)
+	adminTok, _ := adminLogin.body["accessToken"].(string)
+
+	memberMe := getMe(t, srv.URL, memberTok)
+	adminMe := getMe(t, srv.URL, adminTok)
+	if memberMe.Email != "member@spacehub.local" || memberMe.Role != "USER" {
+		t.Fatalf("member me %+v", memberMe)
+	}
+	if adminMe.Email != "admin@spacehub.local" || adminMe.Role != "ADMIN" {
+		t.Fatalf("admin me %+v", adminMe)
+	}
+	if memberMe.ID == adminMe.ID {
+		t.Fatal("two users must not share /users/me")
+	}
+}
+
+func getMe(t *testing.T, base, token string) userDTO {
+	t.Helper()
+	req, _ := http.NewRequest(http.MethodGet, base+"/api/v1/users/me", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("me %d", res.StatusCode)
+	}
+	var profile userDTO
+	if err := json.NewDecoder(res.Body).Decode(&profile); err != nil {
+		t.Fatal(err)
+	}
+	return profile
+}
+
 func TestLoginUnprocessableAndJWKS(t *testing.T) {
 	srv := httptest.NewServer(authMux(t))
 	defer srv.Close()
 
 	wrong := postLogin(t, srv.URL, `{"email":"member@spacehub.local","password":"wrongpass"}`)
-	unknown := postLogin(t, srv.URL, `{"email":"nobody@spacehub.local","password":"Spacehub1!"}`)
+	unknown := postLogin(t, srv.URL, `{"email":"nobody@spacehub.local","password":"`+testSeedPassword+`"}`)
 	if wrong.status != http.StatusUnprocessableEntity || unknown.status != http.StatusUnprocessableEntity {
 		t.Fatalf("status wrong=%d unknown=%d", wrong.status, unknown.status)
 	}

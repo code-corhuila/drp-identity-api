@@ -8,7 +8,7 @@ Contract: `drp-docs` `07-api/contracts/openapi/identity-service.yaml`. RS256 is 
 
 **Corte 2 is the Angular shell** (`drp-front`, `environment.mode = 'failover'`). That UI works with the API off. This process is optional.
 
-This increment: `GET /health`, `POST /api/v1/auth/login` (RS256), `GET /api/v1/auth/jwks`, `GET /api/v1/users/me`. Empty `DATABASE_URL` keeps the **in-memory Corte 2 seed** (same emails as the shell). After Flyway in `drp-identity-db`, set `DATABASE_URL` as `identity_app` — this process **reads** `identity.users` / `identity.user_roles` (no DDL here). Placeholder hashes `PENDING%` are replaced with bcrypt on boot (V002). Do not point `drp-front` at live mode for the Corte 2 checkpoint unless you are demoing this API on purpose.
+This increment: `GET /health`, `POST /api/v1/auth/login` (RS256), `GET /api/v1/auth/jwks`, `GET /api/v1/users/me`. Empty `DATABASE_URL` keeps the **in-memory Corte 2 seed** (synthetic emails `member@spacehub.local` / `admin@spacehub.local`, display names `Member SpaceHub` / `Admin SpaceHub` — not real people). `IDENTITY_SEED_PASSWORD` is **required**; there is no default admin password. Copy `.env.example` to a gitignored `.env`. After Flyway in `drp-identity-db`, set `DATABASE_URL` as `identity_app` — this process **reads** `identity.users` / `identity.user_roles` (no DDL here). Placeholder hashes `PENDING%` are replaced with bcrypt on boot (V002). Do not point `drp-front` at live mode for the Corte 2 checkpoint unless you are demoing this API on purpose. There is no `GET /users/{id}` of another person (E-03 is `/users/me` only).
 
 ## Layout
 

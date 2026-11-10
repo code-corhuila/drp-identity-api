@@ -20,3 +20,8 @@ jobs:
       - run: go test ./...
       - name: No Postgres container in this repo
         run: "! grep -E 'image: postgres' deploy/compose.yml Dockerfile"
+      - name: Classroom seed password must not be in the tree
+        run: |
+          s='Spacehub'
+          s="${s}1!"
+          if git grep -F "$s"; then exit 1; fi

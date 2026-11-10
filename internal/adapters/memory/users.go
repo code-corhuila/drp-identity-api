@@ -2,6 +2,8 @@ package memory
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,15 +21,15 @@ type Users struct {
 }
 
 func Corte2(plainPassword string) (*Users, error) {
-	if plainPassword == "" {
-		plainPassword = "Spacehub1!"
+	if strings.TrimSpace(plainPassword) == "" {
+		return nil, fmt.Errorf("IDENTITY_SEED_PASSWORD is required")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.MinCost)
 	if err != nil {
 		return nil, err
 	}
 	now := time.Unix(0, 0).UTC()
-	member, err := domain.NewUser("44444444-4444-4444-4444-444444444444", "member@spacehub.local", string(hash), "Ana Reserva", []domain.Role{domain.RoleUser}, now)
+	member, err := domain.NewUser("44444444-4444-4444-4444-444444444444", "member@spacehub.local", string(hash), "Member SpaceHub", []domain.Role{domain.RoleUser}, now)
 	if err != nil {
 		return nil, err
 	}

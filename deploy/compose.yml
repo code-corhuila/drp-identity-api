@@ -11,7 +11,7 @@ services:
     environment:
       HTTP_ADDR: ${HTTP_ADDR:-:8081}
       SERVICE_NAME: ${SERVICE_NAME:-identity-service}
-      IDENTITY_SEED_PASSWORD: ${IDENTITY_SEED_PASSWORD:-Spacehub1!}
+      IDENTITY_SEED_PASSWORD: ${IDENTITY_SEED_PASSWORD:?IDENTITY_SEED_PASSWORD is required}
       JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:-}
       JWT_KID: ${JWT_KID:-spacehub-identity-2026}
       # Engine is drp-infra-postgres on this Compose network (no DB in this file).

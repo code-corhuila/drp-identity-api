@@ -48,7 +48,7 @@ func stringsTrimPrefix(s, p string) string {
 
 func testUser(t *testing.T) domain.User {
 	t.Helper()
-	u, err := domain.NewUser("44444444-4444-4444-4444-444444444444", "member@spacehub.local", "hash", "Ana Reserva", []domain.Role{domain.RoleUser}, time.Unix(0, 0).UTC())
+	u, err := domain.NewUser("44444444-4444-4444-4444-444444444444", "member@spacehub.local", "hash", "Member SpaceHub", []domain.Role{domain.RoleUser}, time.Unix(0, 0).UTC())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func testUser(t *testing.T) domain.User {
 func TestLoginOK(t *testing.T) {
 	u := testUser(t)
 	a := Auth{Users: stubUsers{u}, Passwords: stubPwd{true}, Tokens: stubTok{}}
-	got, err := a.Login(context.Background(), LoginCommand{Email: "Member@spacehub.local", Password: "Spacehub1!"})
+	got, err := a.Login(context.Background(), LoginCommand{Email: "Member@spacehub.local", Password: "test-seed-only"})
 	if err != nil || got.AccessToken == "" || got.TokenType != "Bearer" {
 		t.Fatalf("%v %+v", err, got)
 	}
@@ -73,11 +73,11 @@ func TestLoginRejects(t *testing.T) {
 	if _, err := a.Login(context.Background(), LoginCommand{Email: "member@spacehub.local", Password: ""}); err != ErrInvalidCredentials {
 		t.Fatalf("empty password: %v", err)
 	}
-	if _, err := a.Login(context.Background(), LoginCommand{Email: "member@spacehub.local", Password: "Spacehub1!"}); err != ErrInvalidCredentials {
+	if _, err := a.Login(context.Background(), LoginCommand{Email: "member@spacehub.local", Password: "test-seed-only"}); err != ErrInvalidCredentials {
 		t.Fatalf("bad password: %v", err)
 	}
 	unknown := Auth{Users: stubUsers{u}, Passwords: stubPwd{true}, Tokens: stubTok{}}
-	if _, err := unknown.Login(context.Background(), LoginCommand{Email: "nobody@spacehub.local", Password: "Spacehub1!"}); err != ErrInvalidCredentials {
+	if _, err := unknown.Login(context.Background(), LoginCommand{Email: "nobody@spacehub.local", Password: "test-seed-only"}); err != ErrInvalidCredentials {
 		t.Fatalf("unknown user: %v", err)
 	}
 }
