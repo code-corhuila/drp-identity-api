@@ -22,7 +22,7 @@ func TestFindByEmailLiveCorte2(t *testing.T) {
 	users := NewUsers(db)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := users.EnsureSeedPassword(ctx, "Spacehub1!"); err != nil {
+	if err := users.EnsureSeedPassword(ctx, "test-seed-only"); err != nil {
 		t.Fatal(err)
 	}
 	email, err := domain.NewEmail("member@spacehub.local")

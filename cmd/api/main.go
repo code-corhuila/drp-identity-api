@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	httpadapter "github.com/code-corhuila/drp-identity-api/internal/adapters/http"
@@ -24,6 +25,11 @@ func main() {
 		service = "identity-service"
 	}
 
+	seedPassword := strings.TrimSpace(os.Getenv("IDENTITY_SEED_PASSWORD"))
+	if seedPassword == "" {
+		log.Fatal("IDENTITY_SEED_PASSWORD is required (no default admin credential)")
+	}
+
 	var users app.UserRepository
 	var ready func(context.Context) error
 	store := "memory Corte 2 seed"
@@ -36,14 +42,14 @@ func main() {
 		pg := postgres.NewUsers(db)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		if err := pg.EnsureSeedPassword(ctx, os.Getenv("IDENTITY_SEED_PASSWORD")); err != nil {
+		if err := pg.EnsureSeedPassword(ctx, seedPassword); err != nil {
 			log.Fatal(err)
 		}
 		users = pg
 		store = "postgres identity schema"
 		ready = pg.Ping
 	} else {
-		seed, err := memory.Corte2(os.Getenv("IDENTITY_SEED_PASSWORD"))
+		seed, err := memory.Corte2(seedPassword)
 		if err != nil {
 			log.Fatal(err)
 		}
