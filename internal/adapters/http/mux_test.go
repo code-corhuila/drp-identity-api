@@ -26,7 +26,7 @@ func TestHealth(t *testing.T) {
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		t.Fatal(err)
 	}
-	if body.Status != "ok" || body.Service != "identity-service" {
+	if body.Status != "ok" || body.Service != "identity-service" || body.Timestamp == "" {
 		t.Fatalf("body %+v", body)
 	}
 }

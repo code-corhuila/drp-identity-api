@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"math/big"
@@ -63,7 +64,9 @@ func (s *RS256) Issue(user domain.User) (string, int, error) {
 	claims := jwt.MapClaims{
 		"sub":   user.ID,
 		"email": user.Email.String(),
+		"role":  string(user.PublicRole()),
 		"roles": roles(user),
+		"jti":   newJTI(),
 		"iat":   now.Unix(),
 		"exp":   now.Add(s.ttl).Unix(),
 	}
@@ -107,6 +110,15 @@ func (s *RS256) PublicJWKS() map[string]any {
 			"e":   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(pub.E)).Bytes()),
 		}},
 	}
+}
+
+func newJTI() string {
+	var buf [16]byte
+	_, _ = rand.Read(buf[:])
+	buf[6] = (buf[6] & 0x0f) | 0x40
+	buf[8] = (buf[8] & 0x3f) | 0x80
+	h := hex.EncodeToString(buf[:])
+	return h[0:8] + "-" + h[8:12] + "-" + h[12:16] + "-" + h[16:20] + "-" + h[20:32]
 }
 
 func roles(u domain.User) []string {

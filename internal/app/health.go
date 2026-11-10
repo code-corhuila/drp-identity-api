@@ -1,14 +1,20 @@
 package app
 
-// Health is the liveness result. Login uses an in-memory seed until Flyway persistence lands.
+import "time"
+
+// Health is the liveness result (E-04: status, service, timestamp).
 type Health struct {
-	Status  string
-	Service string
+	Status    string
+	Service   string
+	Timestamp time.Time
 }
 
-func CheckHealth(service string) Health {
+func CheckHealth(service string, now time.Time) Health {
 	if service == "" {
 		service = "identity-service"
 	}
-	return Health{Status: "ok", Service: service}
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
+	return Health{Status: "ok", Service: service, Timestamp: now.UTC()}
 }
