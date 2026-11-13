@@ -33,8 +33,12 @@ curl http://localhost:8081/health
 Compose (infra network must exist). Do **not** pass `.env.example` as `--env-file`: that DSN is for a **host** process (`localhost`). The compose file already injects `DATABASE_URL` to `postgres:5432` on the infra network.
 
 ```bash
-docker compose -f deploy/compose.yml up --build
+# Infra must be up first (creates network drp-dev_default).
+# Copy env/dev.env.example → env/dev.env and set IDENTITY_SEED_PASSWORD.
+docker compose --env-file ../drp-infra-postgres/env/dev.env --env-file env/dev.env -f deploy/compose.yml up --build
 ```
+
+qa / main: same file, `env/qa.env` or `env/main.env` (host ports 18081 / 28081). Do not start three stacks unless you need them; one environment at a time is enough for the rubric.
 
 ## Branching
 
