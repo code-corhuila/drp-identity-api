@@ -26,7 +26,11 @@ type Auth struct {
 }
 
 func (a Auth) Login(ctx context.Context, cmd LoginCommand) (LoginResult, error) {
-	if strings.TrimSpace(cmd.Email) == "" || len(cmd.Password) < 8 {
+	// E-01: empty string is a rule failure (422), missing/null is handled in HTTP (400).
+	if strings.TrimSpace(cmd.Email) == "" || cmd.Password == "" {
+		return LoginResult{}, ErrInvalidCredentials
+	}
+	if len(cmd.Password) < 8 {
 		return LoginResult{}, ErrValidation
 	}
 	email, err := domain.NewEmail(cmd.Email)
